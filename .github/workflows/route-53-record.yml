@@ -3,6 +3,12 @@ name: Create Route 53 Record
 on:
   workflow_dispatch:
     inputs:
+
+      aws_region:
+        description: 'AWS region where the Route 53 hosted zone is located.'
+        required: true
+        default: 'us-east-1'
+        
       record_type:
         description: 'Type of DNS record to create: A, CNAME, etc.'
         required: true
