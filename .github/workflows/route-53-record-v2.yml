@@ -1,5 +1,5 @@
 ### Create a Route 53 Record
-name: Create Route 53 Record
+name: Create Route 53 Record-v2
 on:
   workflow_dispatch:
     inputs:
