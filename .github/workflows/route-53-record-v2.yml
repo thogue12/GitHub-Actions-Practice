@@ -1,0 +1,55 @@
+### Create a Route 53 Record
+name: Create Route 53 Record
+on:
+  workflow_dispatch:
+    inputs:
+      # region:
+      #   description: 'AWS region where the Route 53 hosted zone is located.'
+      #   required: true
+      #   default: 'us-east-1'
+      record_type:
+        description: 'Type of DNS record to create: A, CNAME, etc.'
+        required: true
+        default: 'A'
+
+      record_name:
+        description: 'Name of the DNS record to create.'
+        required: true
+        default: 'example'
+
+      value_of_record:
+        description: 'Value of the DNS record to create.'
+        required: true
+        default: '1.2.3.4'
+permissions:
+    id-token: write
+    contents: read     
+jobs:
+  create_record:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4.1.0
+        with:
+          aws-region: us-east-1
+          role-to-assume: ${{ secrets.AWS_ROLE_ID}} 
+ 
+      - name: "Create an A record set"
+        uses: Roosterfish/aws-route53-record-set-action@master
+        run: |
+          aws route53 change-resource-record-sets \
+            --hosted-zone-id "${{ secrets.AWS_ROUTE53_HOSTED_ZONE_ID }}" \
+            --change-batch '{
+              "Changes": [{
+                "Action": "CREATE",
+                "ResourceRecordSet": {
+                  "Name": "'"${{ inputs.record_name }}.${{ secrets.HOSTED_ZONE_NAME }}"'",
+                  "Type": "'"${{ inputs.record_type }}"'",
+                  "TTL": 300,
+                  "ResourceRecords": [{"Value": "'"${{ inputs.value_of_record }}"'"}]
+                }
+              }]
+            }'
+    
