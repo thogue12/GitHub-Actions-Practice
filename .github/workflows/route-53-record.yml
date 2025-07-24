@@ -15,7 +15,7 @@ on:
       record_name:
         description: 'Name of the DNS record to create.'
         required: true
-        default: 'example.com'
+        default: 'example'
 
       value_of_record:
         description: 'Value of the DNS record to create.'
