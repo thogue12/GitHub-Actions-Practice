@@ -3,10 +3,10 @@ name: Create Route 53 Record
 on:
   workflow_dispatch:
     inputs:
-      region:
-        description: 'AWS region where the Route 53 hosted zone is located.'
-        required: true
-        default: 'us-east-1'
+      # region:
+      #   description: 'AWS region where the Route 53 hosted zone is located.'
+      #   required: true
+      #   default: 'us-east-1'
       record_type:
         description: 'Type of DNS record to create: A, CNAME, etc.'
         required: true
@@ -33,11 +33,10 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4.1.0
         with:
           aws-region: us-east-1
-          role-to-assume: ${{ secrets.AWS_ROLE_ID}}
+          role-to-assume: ${{ secrets.AWS_ROLE_ID}}      
       - name: "Create an A record set"
         uses: Roosterfish/aws-route53-record-set-action@master
         with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ID}}
           aws_route53_hosted_zone_id: ${{ secrets.AWS_ROUTE53_HOSTED_ZONE_ID }}
           aws_route53_rr_action: "CREATE"
           aws_route53_rr_name: ${{ inputs.record_name}}.${{secrets.HOSTED_ZONE_NAME }}
