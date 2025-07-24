@@ -37,7 +37,6 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_ID}} 
  
       - name: "Create an A record set"
-        uses: Roosterfish/aws-route53-record-set-action@master
         run: |
           aws route53 change-resource-record-sets \
             --hosted-zone-id "${{ secrets.AWS_ROUTE53_HOSTED_ZONE_ID }}" \
