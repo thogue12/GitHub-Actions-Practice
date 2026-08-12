@@ -234,11 +234,11 @@ jobs:
             ERRORS=$((ERRORS + 1))
           fi
 
-          # Check that all pattern fields are arrays
+          # Check that all pattern fields are arrays or strings
           PATTERN_TYPES=$(jq -r ".[$i].conditions[]?.pattern | type" manifest.json 2>/dev/null)
           for ptype in $PATTERN_TYPES; do
-            if [[ "$ptype" != "array" ]]; then
-              echo "❌ Entry $i: 'pattern' field must be an array, got: $ptype"
+            if [[ "$ptype" != "array" && "$ptype" != "string" ]]; then
+              echo "❌ Entry $i: 'pattern' field must be an array or string, got: $ptype"
               ERRORS=$((ERRORS + 1))
             fi
           done
