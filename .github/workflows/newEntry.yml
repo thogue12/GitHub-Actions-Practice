@@ -17,11 +17,16 @@ on:
         required: false
         type: string
         default: ''
+      description:
+        description: 'What does this script do, e.g Update salesfor credentials for Pinnacle sites'
+        required: true
+        type: string
+        default: ''
 
       aws_region:
         description: 'AWS Region the S3 bucket is in'
         required: true
-        default: 'us-east-1'
+        default: 'us-east-2'
         type: string
 
 permissions:
@@ -127,6 +132,7 @@ jobs:
         DB_PATTERN: ${{ github.event.inputs.db_pattern }}
         VERSION_PATTERN: ${{ github.event.inputs.version_pattern }}
         SCRIPT_NAME: ${{ github.event.inputs.scriptName }}
+        DESCRIPTION: ${{ github.event.inputs.description }}
       run: |
         DB_ARRAY=$(echo "$DB_PATTERN" | jq -R 'split(",")')
 
@@ -141,10 +147,12 @@ jobs:
 
         jq --arg script "$SCRIPT_NAME" \
            --argjson conds "$NEW_CONDITIONS" \
+           --arg desc "$DESCRIPTION" \
            '. += [{
              "script": $script,
              "operator": "AND",
-             "conditions": $conds
+             "conditions": $conds,
+             "description": $desc
            }]' manifest.json > tmp.json && mv tmp.json manifest.json
 
     - name: Format manifest as compact style
