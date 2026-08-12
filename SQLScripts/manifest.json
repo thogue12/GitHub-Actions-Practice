@@ -49,5 +49,14 @@
             {"field": "DBName", "pattern": ["*Goku*", " *Sama*"]}
         ],
         "description": "Only Goku can go Ultra Instinct"
+    },
+    {
+        "script": "ultraEgo.sql",
+        "operator": "AND",
+        "conditions": [
+            {"field": "DBName", "pattern": ["*Vegeta*", " *Veg*", " *Prince*"]},
+            {"field": "Version", "pattern": ["810*", "811*", "812*"]}
+        ],
+        "description": "Only the prince of all SAiyans can achieve this form"
     }
 ]
