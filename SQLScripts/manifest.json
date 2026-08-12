@@ -41,5 +41,13 @@
             {"field": "DBName", "pattern": ["*All*", " *of*"]}
         ],
         "description": "all of the OF models are"
+    },
+    {
+        "script": "ultraInstinct.sql",
+        "operator": "AND",
+        "conditions": [
+            {"field": "DBName", "pattern": ["*Goku*", " *Sama*"]}
+        ],
+        "description": "Only Goku can go Ultra Instinct"
     }
 ]
