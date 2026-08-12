@@ -251,3 +251,24 @@ jobs:
         git add manifest.json
         git commit -m "manifest: add entry for ${{ github.event.inputs.scriptName }}"
         git push origin HEAD:main
+
+  pushToS3:
+    name: Push SQLScripts to S3
+    needs: addEntry
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        ref: main
+
+    - name: Configure AWS credentials via OIDC
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: ${{ secrets.AWS_ROLE_ID }}
+        aws-region: ${{ vars.AWS_REGION }}
+
+    - name: Sync SQLScripts to S3
+      run: |
+        aws s3 sync SQLScripts/ s3://${{ vars.S3_BUCKET }}/SQLScripts/ --delete
+        echo "✅ SQLScripts synced to S3"
