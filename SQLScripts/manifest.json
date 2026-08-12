@@ -49,5 +49,13 @@
             {"field": "DBName", "pattern": ["*Smooth*", " *Hogue*", " *AnotherOne*"]},
             {"field": "Version", "pattern": ["810*", "811*", "812*"]}
         ]
+    },
+    {
+        "script": "smoothTest.sql",
+        "operator": "AND",
+        "conditions": [
+            {"field": "DBName", "pattern": ["*John*", " *Hopkins*", " *Ally*"]},
+            {"field": "Version", "pattern": ["810*", "811*", "812*"]}
+        ]
     }
 ]
