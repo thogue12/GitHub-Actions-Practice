@@ -3,7 +3,14 @@
         "script": "update_api_credentials.sql",
         "operator": "AND",
         "conditions": [
-            { "field": "DBName", "pattern": ["*ClientTypeA*", "*ClientTypeB*", "*ClientTypeC*"] }
+            {
+                "field": "DBName",
+                "pattern": [
+                    "*ClientTypeA*",
+                    "*ClientTypeB*",
+                    "*ClientTypeC*"
+                ]
+            }
         ],
         "description": "Update third-party API credentials for ClientTypeA sites",
         "verify": "SELECT * FROM common_api_config_t WHERE process_id IN (1, 2)"
@@ -12,7 +19,14 @@
         "script": "update_assessment_import_p.sql",
         "operator": "AND",
         "conditions": [
-            { "field": "DBName", "pattern": ["*ClientTypeA*", "*ClientTypeB*", "*ClientTypeC*"] }
+            {
+                "field": "DBName",
+                "pattern": [
+                    "*ClientTypeA*",
+                    "*ClientTypeB*",
+                    "*ClientTypeC*"
+                ]
+            }
         ],
         "description": "Update assessment import procedure for ClientTypeA sites",
         "verify": "SELECT name, modify_date FROM sys.procedures WHERE name = 'assessment_import_add_p'"
@@ -21,8 +35,20 @@
         "script": "update_bulk_reconciliation_p.sql",
         "operator": "AND",
         "conditions": [
-            { "field": "DBName", "pattern": ["*ClientTypeD*", "*ClientTypeE*"] },
-            { "field": "Version", "pattern": ["810*", "811*"] }
+            {
+                "field": "DBName",
+                "pattern": [
+                    "*ClientTypeD*",
+                    "*ClientTypeE*"
+                ]
+            },
+            {
+                "field": "Version",
+                "pattern": [
+                    "810*",
+                    "811*"
+                ]
+            }
         ],
         "description": "Update bulk reconciliation procedure for ClientTypeD sites on version 8.10 and 8.11"
     },
@@ -30,8 +56,32 @@
         "script": "update_orders_t.sql",
         "operator": "AND",
         "conditions": [
-            { "field": "DBName", "pattern": ["*ClientTypeD*", "*ClientTypeE*"] }
+            {
+                "field": "DBName",
+                "pattern": [
+                    "*ClientTypeD*",
+                    "*ClientTypeE*"
+                ]
+            }
         ],
         "description": "Update orders table for ClientTypeD sites"
+    },
+    {
+        "script": "smoothTest.sql",
+        "operator": "AND",
+        "conditions": [
+            {
+                "field": "DBName",
+                "pattern": [
+                    "*SmoothHogue*"
+                ]
+            },
+            {
+                "field": "Version",
+                "pattern": [
+                    "812*"
+                ]
+            }
+        ]
     }
 ]
