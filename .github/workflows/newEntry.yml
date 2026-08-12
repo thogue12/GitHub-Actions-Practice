@@ -275,6 +275,7 @@ jobs:
         aws-region: ${{ github.event.inputs.aws_region }}
 
     - name: Sync SQLScripts to S3
+      working-directory: .
       run: |
         aws s3 sync SQLScripts/ s3://tims-newest-bucket/SQLScripts/ --delete
         echo "✅ SQLScripts synced to S3"
