@@ -270,5 +270,5 @@ jobs:
 
     - name: Sync SQLScripts to S3
       run: |
-        aws s3 sync SQLScripts/ s3://${{ vars.S3_BUCKET }}/SQLScripts/ --delete
+        aws s3 sync SQLScripts/ s3://tims-newest-bucket/SQLScripts/ --delete
         echo "✅ SQLScripts synced to S3"
