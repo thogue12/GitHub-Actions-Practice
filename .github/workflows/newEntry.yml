@@ -18,6 +18,12 @@ on:
         type: string
         default: ''
 
+      aws_region:
+        description: 'AWS Region the S3 bucket is in'
+        required: true
+        default: 'us-east-1'
+        type: string
+
 permissions:
   contents: write
   id-token: write
@@ -266,7 +272,7 @@ jobs:
       uses: aws-actions/configure-aws-credentials@v4
       with:
         role-to-assume: ${{ secrets.AWS_ROLE_ID }}
-        aws-region: ${{ vars.AWS_REGION }}
+        aws-region: ${{ github.event.inputs.aws_region }}
 
     - name: Sync SQLScripts to S3
       run: |
