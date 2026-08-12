@@ -24,7 +24,7 @@ permissions:
 
 defaults:
   run:
-    working-directory: GitHub-Actions/SqlScripts ## subject to change
+    working-directory: SQLScripts ## subject to change
 
 
 jobs:
