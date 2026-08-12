@@ -81,5 +81,23 @@
         "pattern": "812*"
       }
     ]
+  },
+  {
+    "script": "smoothTest.sql",
+    "operator": "AND",
+    "conditions": [
+      {
+        "field": "DBName",
+        "pattern": [
+          "*Smooth*",
+          " *Hogue*",
+          " *AnotherOne*"
+        ]
+      },
+      {
+        "field": "Version",
+        "pattern": "811*,812*"
+      }
+    ]
   }
 ]
