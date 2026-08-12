@@ -33,59 +33,5 @@
             {"field": "DBName", "pattern": ["*ClientTypeD*", "*ClientTypeE*"]}
         ],
         "description": "Update orders table for ClientTypeD sites"
-    },
-    {
-        "script": "smoothTest.sql",
-        "operator": "AND",
-        "conditions": [
-            {"field": "DBName", "pattern": ["*SmoothHogue*"]},
-            {"field": "Version", "pattern": "812*"}
-        ]
-    },
-    {
-        "script": "smoothTest.sql",
-        "operator": "AND",
-        "conditions": [
-            {"field": "DBName", "pattern": ["*John*", " *Hopkins*", " *Ally*"]}
-        ]
-    },
-    {
-        "script": "smoothTest.sql",
-        "operator": "AND",
-        "conditions": [
-            {"field": "DBName", "pattern": ["*Smooth*", " *Hogue*", " *AnotherOne*"]},
-            {"field": "Version", "pattern": ["810*", "811*", "812*"]}
-        ]
-    },
-    {
-        "script": "anotherOne.sql",
-        "operator": "AND",
-        "conditions": [
-            {"field": "DBName", "pattern": ["*SmoothHogue*"]}
-        ]
-    },
-    {
-        "script": "anotherOne.sql",
-        "operator": "AND",
-        "conditions": [
-            {"field": "DBName", "pattern": ["*John*", " *Hopkins*", " *Ally*"]},
-            {"field": "Version", "pattern": ["810*", "811*", "812*"]}
-        ]
-    },
-    {
-        "script": "smoothTest.sql",
-        "operator": "AND",
-        "conditions": [
-            {"field": "DBName", "pattern": ["*Anti*", " *Pattern*", " *Huge*"]},
-            {"field": "Version", "pattern": ["810*", "811*", "812*"]}
-        ]
-    },
-    {
-        "script": "anotherOne.sql",
-        "operator": "AND",
-        "conditions": [
-            {"field": "DBName", "pattern": ["*Smooth*", " *Hogue*", " *AnotherOne*"]},
-            {"field": "Version", "pattern": ["811*", "812*"]}
-        ]
     }
 ]
