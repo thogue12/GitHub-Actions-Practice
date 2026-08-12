@@ -33,5 +33,13 @@
             {"field": "DBName", "pattern": ["*ClientTypeD*", "*ClientTypeE*"]}
         ],
         "description": "Update orders table for ClientTypeD sites"
+    },
+    {
+        "script": "thatPart.sql",
+        "operator": "AND",
+        "conditions": [
+            {"field": "DBName", "pattern": ["*All*", " *of*"]}
+        ],
+        "description": "all of the OF models are"
     }
 ]
