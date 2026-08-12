@@ -56,5 +56,12 @@
             {"field": "DBName", "pattern": ["*Smooth*", " *Hogue*", " *AnotherOne*"]},
             {"field": "Version", "pattern": ["810*", "811*", "812*"]}
         ]
+    },
+    {
+        "script": "anotherOne.sql",
+        "operator": "AND",
+        "conditions": [
+            {"field": "DBName", "pattern": ["*SmoothHogue*"]}
+        ]
     }
 ]
