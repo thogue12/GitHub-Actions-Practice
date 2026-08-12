@@ -133,7 +133,7 @@ jobs:
             '[{"field": "DBName", "pattern": $db}]')
         fi
 
-        jq --indent 4 --arg script "$SCRIPT_NAME" \
+        jq --arg script "$SCRIPT_NAME" \
            --argjson conds "$NEW_CONDITIONS" \
            '. += [{
              "script": $script,
@@ -141,7 +141,49 @@ jobs:
              "conditions": $conds
            }]' manifest.json > tmp.json && mv tmp.json manifest.json
 
-        echo "Updated manifest.json:"
+    - name: Format manifest as compact style
+      run: |
+        python3 << 'EOF'
+        import json
+
+        with open("manifest.json", "r") as f:
+            data = json.load(f)
+
+        lines = ["["]
+        for i, entry in enumerate(data):
+            comma = "," if i < len(data) - 1 else ""
+            lines.append("    {")
+            # script
+            lines.append(f'        "script": {json.dumps(entry["script"])},')
+            # operator
+            lines.append(f'        "operator": {json.dumps(entry["operator"])},')
+            # conditions - each on one line
+            lines.append('        "conditions": [')
+            conditions = entry["conditions"]
+            for j, cond in enumerate(conditions):
+                cond_comma = "," if j < len(conditions) - 1 else ""
+                cond_str = json.dumps(cond, separators=(", ", ": "))
+                lines.append(f"            {cond_str}{cond_comma}")
+            lines.append("        ],")
+            # description (optional)
+            if "description" in entry:
+                lines.append(f'        "description": {json.dumps(entry["description"])},')
+            # verify (optional)
+            if "verify" in entry:
+                lines.append(f'        "verify": {json.dumps(entry["verify"])},')
+            # Remove trailing comma from last field
+            lines[-1] = lines[-1].rstrip(",")
+            lines.append(f"    }}{comma}")
+        lines.append("]")
+        lines.append("")
+
+        with open("manifest.json", "w") as f:
+            f.write("\n".join(lines))
+
+        print("Formatted manifest.json in compact style")
+        EOF
+
+        echo "Formatted manifest.json:"
         cat manifest.json
 
     - name: Validate manifest.json is valid JSON
