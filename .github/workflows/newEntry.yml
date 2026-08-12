@@ -1,0 +1,152 @@
+name: Add new entry to Manifest file for SQL Scripts
+
+on:
+  workflow_dispatch:
+    inputs:
+      scriptName:
+        description: 'Name of the SQL script in the SqlScripts folder e.g. sales-force.sql'
+        required: true
+        type: string
+      db_pattern:
+        description: 'DBName patterns comma-separated e.g. *SiteName*,*SiteNames*,*SiteName3*: defaults to all databases'
+        required: true
+        default: ''
+        type: string
+      version_pattern:
+        description: 'Version pattern e.g. 812* — leave blank to run for all VERSION'
+        required: false
+        type: string
+        default: ''
+
+permissions:
+  contents: write
+  id-token: write
+
+defaults:
+  run:
+    working-directory: GitHub-Actions/SqlScripts ## subject to change
+
+
+jobs:
+  scriptCheck:
+    name: Check Script Exists
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Get manifest file
+        id: manifest_file
+        run: |
+          if [ -f "manifest.json" ]; then
+            echo "manifest_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "manifest_exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Validate script name is a .sql file
+        run: |
+          if [[ "${{ github.event.inputs.scriptName }}" != *.sql ]]; then
+            echo "ERROR: scriptName must be a .sql file, got: ${{ github.event.inputs.scriptName }}"
+            exit 1
+          fi
+
+      - name: Check script exists in SqlScripts folder
+        run: |
+          if [ ! -f "${{ github.event.inputs.scriptName }}" ]; then
+            echo "ERROR: ${{ github.event.inputs.scriptName }} not found in SqlScripts folder"
+            echo "Make sure your PR adding the script was merged to main before running this workflow"
+            exit 1
+          fi
+          echo "OK: ${{ github.event.inputs.scriptName }} found"
+
+      - name: Check DB pattern is not empty
+        run: |
+          if [[ -z "${{ github.event.inputs.db_pattern }}" ]]; then
+            echo "ERROR: input for parameter 'db_pattern' is empty"
+            exit 1
+          fi
+
+  parseManifest:
+    name: parse manifest
+    needs: scriptCheck
+    runs-on: ubuntu-latest
+  
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Read Manifest File
+      id: read_manifest
+      run: |
+        ENTRY_COUNT=$(jq 'length' manifest.json)
+        echo "Manifest has $ENTRY_COUNT entries"
+
+    - name: Check for duplicates
+      id: check_duplicates
+      run: |
+        DB_ARRAY=$(echo "${{ github.event.inputs.db_pattern }}" | jq -R 'split(",")')
+
+        if [[ -n "${{ github.event.inputs.version_pattern }}" ]]; then
+          NEW_CONDITIONS=$(jq -n --argjson db "$DB_ARRAY" --arg vp "${{ github.event.inputs.version_pattern }}" \
+            '[{"field": "DBName", "pattern": $db}, {"field": "Version", "pattern": $vp}]')
+        else
+          NEW_CONDITIONS=$(jq -n --argjson db "$DB_ARRAY" \
+            '[{"field": "DBName", "pattern": $db}]')
+        fi
+
+        DUPLICATE=$(jq --arg script "${{ github.event.inputs.scriptName }}" --argjson conds "$NEW_CONDITIONS" \
+          '[.[] | select(.script == $script and .conditions == $conds)] | length' \
+          manifest.json)
+
+        if [[ "$DUPLICATE" -gt 0 ]]; then
+          echo "ERROR: An entry for '${{ github.event.inputs.scriptName }}' with these exact conditions already exists in the manifest."
+          exit 1
+        fi
+
+  addEntry:
+    name: Add new entry to manifest
+    needs: parseManifest
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        token: ${{ secrets.PAT }}
+
+    - name: Create new entry
+      id: new_entry
+      env:
+        DB_PATTERN: ${{ github.event.inputs.db_pattern }}
+        VERSION_PATTERN: ${{ github.event.inputs.version_pattern }}
+        SCRIPT_NAME: ${{ github.event.inputs.scriptName }}
+      run: |
+        DB_ARRAY=$(echo "$DB_PATTERN" | jq -R 'split(",")')
+
+        if [[ -n "$VERSION_PATTERN" ]]; then
+          NEW_CONDITIONS=$(jq -n --argjson db "$DB_ARRAY" --arg vp "$VERSION_PATTERN" \
+            '[{"field": "DBName", "pattern": $db}, {"field": "Version", "pattern": $vp}]')
+        else
+          NEW_CONDITIONS=$(jq -n --argjson db "$DB_ARRAY" \
+            '[{"field": "DBName", "pattern": $db}]')
+        fi
+
+        jq --arg script "$SCRIPT_NAME" \
+           --argjson conds "$NEW_CONDITIONS" \
+           '. += [{
+             "script": $script,
+             "operator": "AND",
+             "conditions": $conds
+           }]' manifest.json > tmp.json && mv tmp.json manifest.json
+
+        echo "Updated manifest.json:"
+        cat manifest.json
+
+    - name: Commit changes
+      run: |
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+        git add manifest.json
+        git commit -m "manifest: add entry for ${{ github.event.inputs.scriptName }}"
+        git push origin HEAD:main
