@@ -89,7 +89,8 @@ jobs:
         DB_ARRAY=$(echo "${{ github.event.inputs.db_pattern }}" | jq -R 'split(",")')
 
         if [[ -n "${{ github.event.inputs.version_pattern }}" ]]; then
-          NEW_CONDITIONS=$(jq -n --argjson db "$DB_ARRAY" --arg vp "${{ github.event.inputs.version_pattern }}" \
+          VERSION_ARRAY=$(echo "${{ github.event.inputs.version_pattern }}" | jq -R 'split(",")')
+          NEW_CONDITIONS=$(jq -n --argjson db "$DB_ARRAY" --argjson vp "$VERSION_ARRAY" \
             '[{"field": "DBName", "pattern": $db}, {"field": "Version", "pattern": $vp}]')
         else
           NEW_CONDITIONS=$(jq -n --argjson db "$DB_ARRAY" \
@@ -124,14 +125,15 @@ jobs:
         DB_ARRAY=$(echo "$DB_PATTERN" | jq -R 'split(",")')
 
         if [[ -n "$VERSION_PATTERN" ]]; then
-          NEW_CONDITIONS=$(jq -n --argjson db "$DB_ARRAY" --arg vp "$VERSION_PATTERN" \
+          VERSION_ARRAY=$(echo "$VERSION_PATTERN" | jq -R 'split(",")')
+          NEW_CONDITIONS=$(jq -n --argjson db "$DB_ARRAY" --argjson vp "$VERSION_ARRAY" \
             '[{"field": "DBName", "pattern": $db}, {"field": "Version", "pattern": $vp}]')
         else
           NEW_CONDITIONS=$(jq -n --argjson db "$DB_ARRAY" \
             '[{"field": "DBName", "pattern": $db}]')
         fi
 
-        jq --arg script "$SCRIPT_NAME" \
+        jq --indent 4 --arg script "$SCRIPT_NAME" \
            --argjson conds "$NEW_CONDITIONS" \
            '. += [{
              "script": $script,
@@ -141,6 +143,64 @@ jobs:
 
         echo "Updated manifest.json:"
         cat manifest.json
+
+    - name: Validate manifest.json is valid JSON
+      run: |
+        echo "Validating manifest.json syntax..."
+        if jq empty manifest.json 2>&1; then
+          echo "✅ manifest.json is valid JSON"
+        else
+          echo "❌ manifest.json has invalid JSON syntax"
+          exit 1
+        fi
+
+    - name: Validate manifest structure
+      run: |
+        echo "Checking manifest structure..."
+        ERRORS=0
+
+        # Check it's an array
+        TYPE=$(jq -r 'type' manifest.json)
+        if [[ "$TYPE" != "array" ]]; then
+          echo "❌ Expected top-level array, got: $TYPE"
+          ERRORS=$((ERRORS + 1))
+        fi
+
+        # Check each entry has required fields
+        ENTRY_COUNT=$(jq 'length' manifest.json)
+        for i in $(seq 0 $((ENTRY_COUNT - 1))); do
+          SCRIPT=$(jq -r ".[$i].script // empty" manifest.json)
+          OPERATOR=$(jq -r ".[$i].operator // empty" manifest.json)
+          CONDITIONS=$(jq -r ".[$i].conditions // empty" manifest.json)
+
+          if [[ -z "$SCRIPT" ]]; then
+            echo "❌ Entry $i: missing 'script' field"
+            ERRORS=$((ERRORS + 1))
+          fi
+          if [[ -z "$OPERATOR" ]]; then
+            echo "❌ Entry $i: missing 'operator' field"
+            ERRORS=$((ERRORS + 1))
+          fi
+          if [[ -z "$CONDITIONS" ]]; then
+            echo "❌ Entry $i: missing 'conditions' field"
+            ERRORS=$((ERRORS + 1))
+          fi
+
+          # Check that all pattern fields are arrays
+          PATTERN_TYPES=$(jq -r ".[$i].conditions[]?.pattern | type" manifest.json 2>/dev/null)
+          for ptype in $PATTERN_TYPES; do
+            if [[ "$ptype" != "array" ]]; then
+              echo "❌ Entry $i: 'pattern' field must be an array, got: $ptype"
+              ERRORS=$((ERRORS + 1))
+            fi
+          done
+        done
+
+        if [[ $ERRORS -gt 0 ]]; then
+          echo "❌ Validation failed with $ERRORS error(s)"
+          exit 1
+        fi
+        echo "✅ All $ENTRY_COUNT entries are structurally valid"
 
     - name: Commit changes
       run: |
