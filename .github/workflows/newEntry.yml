@@ -207,7 +207,12 @@ jobs:
         echo "Checking manifest structure..."
         ERRORS=0
 
-
+        # Check it's an array
+        TYPE=$(jq -r 'type' manifest.json)
+        if [[ "$TYPE" != "array" ]]; then
+          echo "❌ Expected top-level array, got: $TYPE"
+          ERRORS=$((ERRORS + 1))
+        fi
 
         # Check each entry has required fields
         ENTRY_COUNT=$(jq 'length' manifest.json)
