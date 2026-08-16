@@ -58,5 +58,13 @@
             {"field": "Version", "pattern": ["810*", "811*", "812*"]}
         ],
         "description": "Only the prince of all SAiyans can achieve this form"
+    },
+    {
+        "script": "ultraEgo.sql",
+        "operator": "AND",
+        "conditions": [
+            {"field": "DBName", "pattern": ["*Goku*", " *Sama*"]}
+        ],
+        "description": "Each and everyone will be doing some getting"
     }
 ]
